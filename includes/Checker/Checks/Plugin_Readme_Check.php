@@ -83,6 +83,9 @@ class Plugin_Readme_Check extends Abstract_File_Check {
 		// Check the readme file for a valid version.
 		$this->check_stable_tag( $result, $readme_file, $parser );
 
+		// Check the readme file for a valid requires headers.
+		$this->check_requires( $result, $readme_file, $parser );
+
 		// Check the readme file for warnings.
 		$this->check_for_warnings( $result, $readme_file, $parser );
 	}
@@ -183,6 +186,49 @@ class Plugin_Readme_Check extends Abstract_File_Check {
 				'stable_tag_mismatch',
 				$readme_file
 			);
+		}
+	}
+
+	/**
+	 * Checks the readme file for requires header.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param Check_Result $result      The Check Result to amend.
+	 * @param string       $readme_file Readme file.
+	 * @param Parser       $parser      The Parser object.
+	 */
+	private function check_requires( Check_Result $result, string $readme_file, Parser $parser ) {
+		$fields = array(
+			'requires'     => array(
+				'label'    => __( 'Requires at least', 'plugin-check' ),
+				'ignore'   => 'requires_header_ignored',
+				'data_key' => 'RequiresWP',
+			),
+			'requires_php' => array(
+				'label'    => __( 'Requires PHP', 'plugin-check' ),
+				'ignore'   => 'requires_php_header_ignored',
+				'data_key' => 'RequiresPHP',
+			),
+		);
+
+		$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . $result->plugin()->basename() );
+
+		foreach ( $fields as $field_key => $field ) {
+			$field_value = $parser->{$field_key};
+			$data_value  = $plugin_data[ $field['data_key'] ];
+
+			if ( empty( $field_value ) && empty( $data_value ) ) {
+				$this->add_result_error_for_file(
+					$result,
+					sprintf(
+						'The "%s" field is missing. It should be defined in readme, or in your main plugin file.',
+						$field['label']
+					),
+					'missing_plugin_header',
+					$readme_file
+				);
+			}
 		}
 	}
 
