@@ -44,6 +44,14 @@ final class Plugin_Check_Command {
 	);
 
 	/**
+	 * Baseline.
+	 *
+	 * @since 1.0.0
+	 * @var array
+	 */
+	protected $baseline = array();
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
@@ -91,6 +99,9 @@ final class Plugin_Check_Command {
 	 * [--ignore-errors]
 	 * : Limit displayed results to exclude errors.
 	 *
+	 * [--generate-baseline]
+	 * : Generate baseline file.
+	 *
 	 * [--include-experimental]
 	 * : Include experimental checks.
 	 *
@@ -117,6 +128,8 @@ final class Plugin_Check_Command {
 	 * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
 	 */
 	public function check( $args, $assoc_args ) {
+		global $wp_filesystem;
+
 		// Get options based on the CLI arguments.
 		$options = $this->get_options(
 			$assoc_args,
@@ -126,6 +139,7 @@ final class Plugin_Check_Command {
 				'ignore-warnings'      => false,
 				'ignore-errors'        => false,
 				'include-experimental' => false,
+				'generate-baseline'    => false,
 			)
 		);
 
@@ -216,6 +230,17 @@ final class Plugin_Check_Command {
 		// Get formatter.
 		$formatter = $this->get_formatter( $assoc_args, $default_fields );
 
+		$all_results = array();
+
+		// Get baseline if exists.
+		if ( $wp_filesystem || WP_Filesystem() ) {
+			$plugin_path = $result->plugin()->path();
+			if ( $wp_filesystem->exists( $plugin_path . '/plugin-check-baseline.php' ) ) {
+				$plugin_baseline = include_once $plugin_path . '/plugin-check-baseline.php';
+				$this->baseline  = is_array( $plugin_baseline ) ? $plugin_baseline : array();
+			}
+		}
+
 		// Print the formatted results.
 		// Go over all files with errors first and print them, combined with any warnings in the same file.
 		foreach ( $errors as $file_name => $file_errors ) {
@@ -225,13 +250,47 @@ final class Plugin_Check_Command {
 				unset( $warnings[ $file_name ] );
 			}
 			$file_results = $this->flatten_file_results( $file_errors, $file_warnings );
-			$this->display_results( $formatter, $file_name, $file_results );
+			if ( true === $options['generate-baseline'] ) {
+				$all_results[ $file_name ] = array_values( array_unique( wp_list_pluck( $file_results, 'code' ) ) );
+			} else {
+				if ( ! empty( $this->baseline ) ) {
+					$file_results = $this->get_baselined_results( $file_name, $file_results );
+				}
+				if ( ! empty( $file_results ) ) {
+					$this->display_results( $formatter, $file_name, $file_results );
+				}
+			}
 		}
 
 		// If there are any files left with only warnings, print those next.
 		foreach ( $warnings as $file_name => $file_warnings ) {
 			$file_results = $this->flatten_file_results( array(), $file_warnings );
-			$this->display_results( $formatter, $file_name, $file_results );
+			if ( true === $options['generate-baseline'] ) {
+				$all_results[ $file_name ] = array_values( array_unique( wp_list_pluck( $file_results, 'code' ) ) );
+			} else {
+				if ( ! empty( $this->baseline ) ) {
+					$file_results = $this->get_baselined_results( $file_name, $file_results );
+				}
+				if ( ! empty( $file_results ) ) {
+					$this->display_results( $formatter, $file_name, $file_results );
+				}
+			}
+		}
+
+		if ( true === $options['generate-baseline'] ) {
+			$baseline_status = false;
+
+			if ( $wp_filesystem || WP_Filesystem() ) {
+				$plugin_path     = $result->plugin()->path();
+				$content         = $this->get_baseline_content( $all_results );
+				$baseline_status = $wp_filesystem->put_contents( $plugin_path . '/plugin-check-baseline.php', $content, FS_CHMOD_FILE );
+			}
+
+			if ( true === $baseline_status ) {
+				WP_CLI::success( 'Baseline file generated successfully.' );
+			} else {
+				WP_CLI::error( 'Error generating baseline file.' );
+			}
 		}
 	}
 
@@ -586,5 +645,54 @@ final class Plugin_Check_Command {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Returns filtered results based on plugin baseline.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $file_name    File name.
+	 * @param array  $file_results Check results for the file.
+	 * @return array Filtered results.
+	 */
+	private function get_baselined_results( string $file_name, array $file_results ) {
+		if ( isset( $this->baseline[ $file_name ] ) && ! empty( $this->baseline[ $file_name ] ) ) {
+			$codes = $this->baseline[ $file_name ];
+
+			$file_results = array_filter(
+				$file_results,
+				function ( $item ) use ( $codes ) {
+					return ! in_array( $item['code'], $codes, true );
+				}
+			);
+		}
+
+		return $file_results;
+	}
+
+	/**
+	 * Returns content for baseline file.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array $results Check results.
+	 * @return string Content of baseline file.
+	 */
+	private function get_baseline_content( array $results ) {
+		if ( empty( $results ) ) {
+			return "<?php \nreturn [];";
+		}
+
+		$content = "<?php \nreturn [";
+
+		foreach ( $results as $file => $codes ) {
+			$codes_str = "'" . implode( "', '", $codes ) . "'";
+			$content  .= "\n\t'$file' => [ $codes_str ],";
+		}
+
+		$content .= "\n];";
+
+		return $content;
 	}
 }
