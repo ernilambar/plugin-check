@@ -8,8 +8,9 @@
 use WordPress\Plugin_Check\Checker\Check_Context;
 use WordPress\Plugin_Check\Checker\Check_Result;
 use WordPress\Plugin_Check\Checker\Checks\Late_Escaping_Check;
+use WordPress\Plugin_Check\Test_Utils\TestCase\Advanced_UnitTestCase;
 
-class Late_Escaping_Check_Tests extends WP_UnitTestCase {
+class Late_Escaping_Check_Tests extends Advanced_UnitTestCase {
 
 	public function test_run_with_errors() {
 		$late_escape_check = new Late_Escaping_Check();
@@ -25,10 +26,7 @@ class Late_Escaping_Check_Tests extends WP_UnitTestCase {
 		$this->assertEquals( 1, $check_result->get_error_count() );
 
 		// Check for WordPress.Security.EscapeOutput error on Line no 24 and column no at 6.
-		$this->assertArrayHasKey( 24, $errors['load.php'] );
-		$this->assertArrayHasKey( 6, $errors['load.php'][24] );
-		$this->assertArrayHasKey( 'code', $errors['load.php'][24][6][0] );
-		$this->assertEquals( 'WordPress.Security.EscapeOutput.OutputNotEscaped', $errors['load.php'][24][6][0]['code'] );
+		$this->assertFileHasCodeInPosition( $errors, 'load.php', 'WordPress.Security.EscapeOutput.OutputNotEscaped', 24, 5 );
 	}
 
 	public function test_run_without_errors() {
