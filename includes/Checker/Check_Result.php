@@ -100,6 +100,7 @@ final class Check_Result {
 			'line'   => 0,
 			'column' => 0,
 			'link'   => '',
+			'severity' => 5,
 		);
 
 		$data = array_merge(
