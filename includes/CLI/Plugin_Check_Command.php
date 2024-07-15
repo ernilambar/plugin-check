@@ -135,7 +135,7 @@ final class Plugin_Check_Command {
 				'ignore-warnings'      => false,
 				'ignore-errors'        => false,
 				'include-experimental' => false,
-				'severity'             => 0,
+				'severity'             => '',
 			)
 		);
 
@@ -235,9 +235,6 @@ final class Plugin_Check_Command {
 		// Get formatter.
 		$formatter = $this->get_formatter( $assoc_args, $default_fields );
 
-		// Severity level. Zero means no filter.
-		$severity = absint( $options['severity'] );
-
 		// Print the formatted results.
 		// Go over all files with errors first and print them, combined with any warnings in the same file.
 		foreach ( $errors as $file_name => $file_errors ) {
@@ -248,8 +245,8 @@ final class Plugin_Check_Command {
 			}
 			$file_results = $this->flatten_file_results( $file_errors, $file_warnings );
 
-			if ( $severity ) {
-				$file_results = $this->get_filtered_results_by_severity( $file_results, $severity );
+			if ( '' !== $options['severity'] ) {
+				$file_results = $this->get_filtered_results_by_severity( $file_results, intval( $options['severity'] ) );
 			}
 
 			if ( ! empty( $file_results ) ) {
@@ -261,8 +258,8 @@ final class Plugin_Check_Command {
 		foreach ( $warnings as $file_name => $file_warnings ) {
 			$file_results = $this->flatten_file_results( array(), $file_warnings );
 
-			if ( $severity ) {
-				$file_results = $this->get_filtered_results_by_severity( $file_results, $severity );
+			if ( '' !== $options['severity'] ) {
+				$file_results = $this->get_filtered_results_by_severity( $file_results, intval( $options['severity'] ) );
 			}
 
 			if ( ! empty( $file_results ) ) {
@@ -627,7 +624,7 @@ final class Plugin_Check_Command {
 	/**
 	 * Returns check results filtered by severity level.
 	 *
-	 * @since 1.0.0
+	 * @since 1.1.0
 	 *
 	 * @param array $results  Check results.
 	 * @param int   $severity Severity level.
