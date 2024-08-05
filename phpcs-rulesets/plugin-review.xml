@@ -99,6 +99,15 @@
 		<type>error</type>
 	</rule>
 
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefix_blocklist" type="array">
+				<element value="set"/>
+				<element value="get"/>
+			</property>
+		</properties>
+	</rule>
+
 	<!-- Check for usage of deprecated parameter values in WP functions and provide alternative based on the parameter passed. -->
 	<rule ref="WordPress.WP.DeprecatedParameterValues"/>
 
