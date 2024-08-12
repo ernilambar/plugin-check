@@ -10,7 +10,8 @@
     "wp-coding-standards/wpcs": "^3.1.0",
     "automattic/vipwpcs": "^3.0.0",
     "afragen/wordpress-plugin-readme-parser": "dev-master#67fba498d0b112acf84386b95e4905c539a33f0b",
-    "ext-json": "*"
+    "ext-json": "*",
+    "cweagans/composer-patches": "^1"
   },
   "require-dev": {
     "phpcompatibility/php-compatibility": "^9.3",
@@ -48,11 +49,18 @@
       "dealerdirect/phpcodesniffer-composer-installer": true,
       "composer/installers": true,
       "phpstan/extension-installer": true,
-      "cweagans/composer-patches": false
+      "cweagans/composer-patches": true
     },
     "platform": {
       "php": "7.2.24"
     }
+  },
+  "extra": {
+      "patches": {
+          "wp-coding-standards/wpcs": {
+              "Update prefixes": "https://patch-diff.githubusercontent.com/raw/ernilambar/WordPress-Coding-Standards/pull/1.patch"
+          }
+      }
   },
   "autoload": {
     "psr-4": {
