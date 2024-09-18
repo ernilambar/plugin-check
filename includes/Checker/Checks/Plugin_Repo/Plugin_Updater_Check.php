@@ -154,6 +154,42 @@ class Plugin_Updater_Check extends Abstract_File_Check {
 					9
 				);
 			}
+
+			return;
+		}
+
+		$has_vendor_updater = false;
+
+		$plugin_path = $result->plugin()->path();
+
+		$file = '';
+
+		if ( is_dir( $plugin_path . 'vendor/yahnis-elsts/plugin-update-checker' ) ) {
+			$has_vendor_updater = true;
+			$file = $plugin_path . 'vendor/yahnis-elsts/plugin-update-checker/plugin-update-checker.php';
+		} elseif ( is_dir( $plugin_path . 'vendor/plugin-update-checker' ) ) {
+			$has_vendor_updater = true;
+			$file = $plugin_path . 'vendor/plugin-update-checker/plugin-update-checker.php';
+		} elseif ( is_dir( $plugin_path . 'vendor/kernl/kernl-update-checker' ) ) {
+			$has_vendor_updater = true;
+			$file = $plugin_path . 'vendor/kernl/kernl-update-checker/kernl-update-checker.php';
+		}
+
+		if ( $has_vendor_updater ) {
+			$this->add_result_error_for_file(
+				$result,
+				sprintf(
+					/* translators: %s: The match updater file name. */
+					__( '<strong>Plugin Updater detected.</strong><br>These are not permitted in WordPress.org hosted plugins. Detected: %s', 'plugin-check' ),
+					basename( $file )
+				),
+				'plugin_updater_detected',
+				$file,
+				0,
+				0,
+				'https://developer.wordpress.org/plugins/wordpress-org/common-issues/#update-checker',
+				9
+			);
 		}
 	}
 
