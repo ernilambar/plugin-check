@@ -45,9 +45,10 @@ class I18n_Usage_Check extends Abstract_PHP_CodeSniffer_Check {
 	 */
 	protected function get_args() {
 		return array(
-			'extensions' => 'php',
-			'standard'   => 'WordPress',
-			'sniffs'     => 'WordPress.WP.I18n',
+			'extensions'  => 'php',
+			'standard'    => 'WordPress',
+			'sniffs'      => 'WordPress.WP.I18n',
+			'runtime-set' => 'text_domain hello-dolly',
 		);
 	}
 
