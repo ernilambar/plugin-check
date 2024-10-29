@@ -92,6 +92,7 @@ class Default_Check_Repository extends Empty_Check_Repository {
 				'trademarks'                 => new Checks\Plugin_Repo\Trademarks_Check(),
 				'non_blocking_scripts'       => new Checks\Performance\Non_Blocking_Scripts_Check(),
 				'offloading_files'           => new Checks\Plugin_Repo\Offloading_Files_Check(),
+				'prefixing'                  => new Checks\Plugin_Repo\Prefixing_Check(),
 				'image_functions'            => new Checks\Performance\Image_Functions_Check(),
 			)
 		);
