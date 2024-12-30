@@ -11,16 +11,18 @@ use WordPress\Plugin_Check\Checker\Check_Categories;
 use WordPress\Plugin_Check\Checker\Check_Result;
 use WordPress\Plugin_Check\Checker\Checks\Abstract_PHP_CodeSniffer_Check;
 use WordPress\Plugin_Check\Traits\Amend_Check_Result;
+use WordPress\Plugin_Check\Traits\Prefix_Utils;
 use WordPress\Plugin_Check\Traits\Stable_Check;
 
 /**
  * Check for prefixing.
  *
- * @since 1.3.0
+ * @since 1.4.0
  */
 class Prefixing_Check extends Abstract_PHP_CodeSniffer_Check {
 
 	use Amend_Check_Result;
+	use Prefix_Utils;
 	use Stable_Check;
 
 	/**
@@ -28,7 +30,7 @@ class Prefixing_Check extends Abstract_PHP_CodeSniffer_Check {
 	 *
 	 * Every check must have at least one category.
 	 *
-	 * @since 1.3.0
+	 * @since 1.4.0
 	 *
 	 * @return array The categories for the check.
 	 */
@@ -39,7 +41,7 @@ class Prefixing_Check extends Abstract_PHP_CodeSniffer_Check {
 	/**
 	 * Returns an associative array of arguments to pass to PHPCS.
 	 *
-	 * @since 1.3.0
+	 * @since 1.4.0
 	 *
 	 * @param Check_Result $result The check result to amend, including the plugin context to check.
 	 * @return array An associative array of PHPCS CLI arguments.
@@ -55,17 +57,11 @@ class Prefixing_Check extends Abstract_PHP_CodeSniffer_Check {
 
 		if ( ! empty( $prefixes ) ) {
 			$args['runtime-set'] = array(
-				'prefixes' => implode( ',', $prefixes )
+				'prefixes' => implode( ',', $prefixes ),
 			);
 		}
 
 		return $args;
-	}
-
-	protected function get_potential_prefixes( Check_Result $result ) {
-		$prefixes = [];
-
-		return $prefixes;
 	}
 
 	/**
@@ -73,7 +69,7 @@ class Prefixing_Check extends Abstract_PHP_CodeSniffer_Check {
 	 *
 	 * Every check must have a short description explaining what the check does.
 	 *
-	 * @since 1.3.0
+	 * @since 1.4.0
 	 *
 	 * @return string Description.
 	 */
@@ -86,7 +82,7 @@ class Prefixing_Check extends Abstract_PHP_CodeSniffer_Check {
 	 *
 	 * Every check must have a URL with further information about the check.
 	 *
-	 * @since 1.3.0
+	 * @since 1.4.0
 	 *
 	 * @return string The documentation URL.
 	 */
